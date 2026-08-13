@@ -23,10 +23,10 @@
     GND  -> GND
 
   I2C LCD (color coded):
-    GND -> GND
-    VCC -> 5V
-    SDA -> A4  (SDA on Uno/Nano)
-    SCL -> A5  (SCL on Uno/Nano)
+    GND  (green)  -> GND
+    VCC  (yellow) -> 5V
+    SDA  (orange) -> A4  (SDA on Uno/Nano)
+    SCL  (red)    -> A5  (SCL on Uno/Nano)
 
   Push Button:
     One leg -> D7
@@ -182,8 +182,8 @@ void loop() {
       noise = constrain(map(a, 0, 1023, 0, 15), 0, 15);
       ampMin = 1023;
       ampMax = 0;
-      lastAmpMs = nowMs;
     }
+    lastAmpMs = nowMs;
 
     // Log noise to SD every second (new file every 10 min)
     writeLogLine();

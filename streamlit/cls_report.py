@@ -118,7 +118,7 @@ else:
 
     seg = seg.copy()
     seg["Clock"] = seg["TimeSec"].apply(fmt)
-    chart = alt.Chart(seg).mark_line(strokeWidth=3, opacity=0.9, color="#ff4b4b").encode(
+    chart = alt.Chart(seg).mark_bar(color="#ff4b4b").encode(
         x=alt.X("Clock:N", title="Time", axis=alt.Axis(labelAngle=-45)),
         y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
     ).properties(height=320)
