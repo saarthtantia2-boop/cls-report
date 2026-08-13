@@ -23,10 +23,10 @@
     GND  -> GND
 
   I2C LCD (color coded):
-    GND  (green)  -> GND
-    VCC  (yellow) -> 5V
-    SDA  (orange) -> A4  (SDA on Uno/Nano)
-    SCL  (red)    -> A5  (SCL on Uno/Nano)
+    GND -> GND
+    VCC -> 5V
+    SDA -> A4  (SDA on Uno/Nano)
+    SCL -> A5  (SCL on Uno/Nano)
 
   Push Button:
     One leg -> D7
