@@ -125,10 +125,11 @@ else:
         return f"{sec//3600:02d}:{(sec%3600)//60:02d}"
 
     seg = seg.copy()
-    seg["Time"] = pd.to_datetime(seg["TimeSec"], unit="s")
+    seg["Clock"] = seg["TimeSec"].apply(lambda s: f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}")
+    seg["Label"] = seg["TimeSec"].apply(lambda s: f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}" if s % 5 == 0 else "")
     chart = alt.Chart(seg).mark_bar(color="#ff4b4b").encode(
-        x=alt.X("Time:T", title="Time",
-                 axis=alt.Axis(format="%H:%M:%S", labelAngle=-45)),
+        x=alt.X("Label:N", title="Time", sort=None,
+                 axis=alt.Axis(labelAngle=-45)),
         y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
     ).properties(height=320)
     st.altair_chart(chart, use_container_width=True)
