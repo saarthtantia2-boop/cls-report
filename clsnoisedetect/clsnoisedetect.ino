@@ -61,10 +61,10 @@
 #define SD_CS         10
 #define I2C_ADDR      0x27
 
-// Uses __TIME__ (compile time) as real-time base — compile just before upload
-#define BASE_HOUR   ((__TIME__[0] - '0') * 10 + (__TIME__[1] - '0'))
-#define BASE_MINUTE ((__TIME__[3] - '0') * 10 + (__TIME__[4] - '0'))
-#define BASE_SECOND ((__TIME__[6] - '0') * 10 + (__TIME__[7] - '0'))
+// Time base — overridden by serial "HH:MM:SS" within 3s of boot, else compile time
+int baseHour   = ((__TIME__[0] - '0') * 10 + (__TIME__[1] - '0'));
+int baseMinute = ((__TIME__[3] - '0') * 10 + (__TIME__[4] - '0'));
+int baseSecond = ((__TIME__[6] - '0') * 10 + (__TIME__[7] - '0'));
 
 #define SAMPLE_RATE   8000
 #define AMP_WIN_MS    1000  // noise level refresh (1 sec)
@@ -133,6 +133,8 @@ void setup() {
   pinMode(BTN_PIN, INPUT_PULLUP);
   buildDateStrings();
 
+  Serial.begin(9600);
+
   Wire.begin();
   lcd.begin(16, 2);
   lcd.createChar(0, circleChar);
@@ -140,7 +142,32 @@ void setup() {
   lcd.clear();
   lcd.print("Noise Detector");
   lcd.setCursor(0, 1);
-  lcd.print("Init SD...");
+  lcd.print("Waiting time...");
+
+  // Wait up to 3 seconds for "HH:MM:SS" from serial (auto-time script or manual)
+  unsigned long waitStart = millis();
+  char timeBuf[9];
+  int timeIdx = 0;
+  while (millis() - waitStart < 3000) {
+    if (Serial.available()) {
+      char c = Serial.read();
+      if (c == '\n' || c == '\r') {
+        if (timeIdx == 8 && timeBuf[2] == ':' && timeBuf[5] == ':') {
+          baseHour   = (timeBuf[0] - '0') * 10 + (timeBuf[1] - '0');
+          baseMinute = (timeBuf[3] - '0') * 10 + (timeBuf[4] - '0');
+          baseSecond = (timeBuf[6] - '0') * 10 + (timeBuf[7] - '0');
+          Serial.print("Time set: ");
+          Serial.println(timeBuf);
+        }
+        timeIdx = 0;
+      } else if (timeIdx < 8) {
+        timeBuf[timeIdx++] = c;
+      }
+    }
+  }
+
+  lcd.setCursor(0, 1);
+  lcd.print("Init SD...      ");
 
   if (!SD.begin(SD_CS)) {
     lcd.setCursor(0, 1);
@@ -210,7 +237,7 @@ void loop() {
 
 // ===== Start Recording =====
 void startRecording() {
-  int totalMin = (BASE_HOUR * 60 + BASE_MINUTE) + (millis() / 60000);
+  int totalMin = (baseHour * 60 + baseMinute) + (millis() / 60000);
   totalMin %= (24 * 60);
   int h24 = totalMin / 60;
   int m = totalMin % 60;
@@ -233,7 +260,7 @@ void stopRecording() {
 
 // ===== Noise Logging =====
 void writeLogLine() {
-  unsigned long totalSec = (BASE_HOUR * 3600L + BASE_MINUTE * 60L + BASE_SECOND + millis() / 1000) % 86400L;
+  unsigned long totalSec = (baseHour * 3600L + baseMinute * 60L + baseSecond + millis() / 1000) % 86400L;
   int hh = totalSec / 3600;
   int mm = (totalSec % 3600) / 60;
   int ss = totalSec % 60;
