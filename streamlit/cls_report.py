@@ -92,12 +92,20 @@ for i, (s, e) in enumerate(PERIODS):
     seg = day[(day["TimeSec"] >= s_sec) & (day["TimeSec"] < e_sec)]
     if len(seg) > 0:
         rows_summary.append({
-            "Period": f"P{i+1}", "Time": f"{s} - {e}",
-            "Points": len(seg), "Avg": round(seg["Noise"].mean(), 2),
+            "Period": f"P{i+1}",
+            "Avg": round(seg["Noise"].mean(), 2),
             "Max": int(seg["Noise"].max()),
         })
 summary = pd.DataFrame(rows_summary)
-st.dataframe(summary, use_container_width=True)
+if len(summary) > 0:
+    bar_chart = alt.Chart(summary).mark_bar(color="#4c78a8").encode(
+        x=alt.X("Period:N", title="Period"),
+        y=alt.Y("Avg:Q", scale=alt.Scale(domain=[0, 15]), title="Avg Noise"),
+        tooltip=["Period", "Avg", "Max"],
+    ).properties(height=300)
+    st.altair_chart(bar_chart, use_container_width=True)
+else:
+    st.info("No period data available.")
 
 s_sec = parse_time(PERIODS[period_sel][0])
 e_sec = parse_time(PERIODS[period_sel][1])
@@ -118,8 +126,10 @@ else:
 
     seg = seg.copy()
     seg["Clock"] = seg["TimeSec"].apply(fmt)
+    seg["Label"] = seg["TimeSec"].apply(lambda s: fmt(s) if s % 5 == 0 else "")
     chart = alt.Chart(seg).mark_bar(color="#ff4b4b").encode(
-        x=alt.X("Clock:N", title="Time", axis=alt.Axis(labelAngle=-45)),
+        x=alt.X("Clock:N", title="Time", sort=None,
+                 axis=alt.Axis(labelAngle=-45, labelExpr="datum.label === '' ? null : datum.label")),
         y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
     ).properties(height=320)
     st.altair_chart(chart, use_container_width=True)
