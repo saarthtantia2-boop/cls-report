@@ -126,7 +126,7 @@ else:
 
     seg = seg.copy()
     seg["Time"] = pd.to_datetime(seg["TimeSec"], unit="s")
-    chart = alt.Chart(seg).mark_bar(color="#ff4b4b", width=1).encode(
+    chart = alt.Chart(seg).mark_bar(color="#ff4b4b", width=800).encode(
         x=alt.X("Time:T", title="Time",
                  axis=alt.Axis(format="%H:%M:%S", tickCount=5, labelAngle=-45)),
         y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
