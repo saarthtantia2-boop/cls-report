@@ -121,17 +121,52 @@ st.subheader(f"Noise over time — {title}")
 if len(seg) == 0:
     st.info("No data in this time range.")
 else:
-    def fmt(sec):
-        return f"{sec//3600:02d}:{(sec%3600)//60:02d}"
-
     seg = seg.copy()
     seg["Clock"] = seg["TimeSec"].apply(lambda s: f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}")
-    chart = alt.Chart(seg).mark_bar(color="#ff4b4b").encode(
-        x=alt.X("Clock:N", title="Time", sort=None,
-                 axis=alt.Axis(labelExpr="parseInt(split(datum.label,':')[2]) % 5 === 0 ? datum.label : ''")),
-        y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
-    ).properties(height=320)
-    st.altair_chart(chart, use_container_width=True)
 
-    st.metric("Average noise", f"{seg['Noise'].mean():.2f}", help="Average noise level during the period")
-    st.metric("Peak noise", f"{seg['Noise'].max()}")
+    min_sec = int(seg["TimeSec"].min())
+    max_sec = int(seg["TimeSec"].max())
+    total_range = max_sec - min_sec
+
+    zoom_options = {
+        "10 min": 600, "5 min": 300, "1 min": 60, "30 sec": 30, "10 sec": 10,
+    }
+    col_a, col_b = st.columns([1, 3])
+    with col_a:
+        zoom_label = st.selectbox("Zoom", list(zoom_options.keys()), index=0)
+    window = zoom_options[zoom_label]
+    if window > total_range:
+        window = total_range
+
+    with col_b:
+        pos = st.slider("Position", min_value=0, max_value=max(total_range, 1),
+                        value=0, step=1,
+                        format_func=lambda s: f"{(min_sec+s)//3600:02d}:{((min_sec+s)%3600)//60:02d}:{(min_sec+s)%60:02d}")
+
+    start = min_sec + pos
+    end = start + window
+    view = seg[(seg["TimeSec"] >= start) & (seg["TimeSec"] <= end)]
+
+    if len(view) == 0:
+        st.info("No data in this zoom window. Slide to a different position.")
+    else:
+        if window <= 60:
+            label_each = 1
+        elif window <= 300:
+            label_each = 5
+        else:
+            label_each = 5
+
+        view = view.copy()
+        view["Label"] = view["TimeSec"].apply(
+            lambda s: f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}" if (s - start) % label_each == 0 else ""
+        )
+        chart = alt.Chart(view).mark_bar(color="#ff4b4b").encode(
+            x=alt.X("Label:N", title="Time", sort=None,
+                     axis=alt.Axis(labelAngle=-45)),
+            y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
+        ).properties(height=320)
+        st.altair_chart(chart, use_container_width=True)
+
+        st.metric("Average noise", f"{view['Noise'].mean():.2f}", help="Average noise level in this window")
+        st.metric("Peak noise", f"{view['Noise'].max()}")
