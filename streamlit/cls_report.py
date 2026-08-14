@@ -136,6 +136,6 @@ else:
     ).add_selection(sel).properties(height=320)
     st.altair_chart(chart, use_container_width=True)
 
-    st.caption("Drag to pan, scroll to zoom")
+    st.caption("Click + drag to pan left/right, scroll to zoom in/out")
     st.metric("Average noise", f"{seg['Noise'].mean():.2f}", help="Average noise level during the period")
     st.metric("Peak noise", f"{seg['Noise'].max()}")
