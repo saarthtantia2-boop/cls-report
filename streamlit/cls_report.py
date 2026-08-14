@@ -98,7 +98,7 @@ for i, (s, e) in enumerate(PERIODS):
         })
 summary = pd.DataFrame(rows_summary)
 if len(summary) > 0:
-    bar_chart = alt.Chart(summary).mark_bar(color="#4c78a8").encode(
+    bar_chart = alt.Chart(summary).mark_bar(color="#4c78a8", width=30).encode(
         x=alt.X("Period:N", title="Period"),
         y=alt.Y("Avg:Q", scale=alt.Scale(domain=[0, 15]), title="Avg Noise"),
         tooltip=["Period", "Avg", "Max"],
@@ -128,8 +128,7 @@ else:
     seg["Clock"] = seg["TimeSec"].apply(lambda s: f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}")
     chart = alt.Chart(seg).mark_bar(color="#ff4b4b").encode(
         x=alt.X("Clock:N", title="Time", sort=None,
-                 axis=alt.Axis(labelAngle=-45,
-                               labelExpr="split(datum.label,':')[2] % 5 == 0 ? datum.label : ''")),
+                 axis=alt.Axis(labelExpr="parseInt(split(datum.label,':')[2]) % 5 === 0 ? datum.label : ''")),
         y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
     ).properties(height=320)
     st.altair_chart(chart, use_container_width=True)
