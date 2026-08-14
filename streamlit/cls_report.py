@@ -157,12 +157,11 @@ else:
             label_each = 5
 
         view = view.copy()
-        view["Label"] = view["TimeSec"].apply(
-            lambda s: f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}" if (s - start) % label_each == 0 else ""
-        )
+        view["Clock"] = view["TimeSec"].apply(lambda s: f"{s//3600:02d}:{(s%3600)//60:02d}:{s%60:02d}")
         chart = alt.Chart(view).mark_bar(color="#ff4b4b").encode(
-            x=alt.X("Label:N", title="Time", sort=None,
-                     axis=alt.Axis(labelAngle=-45)),
+            x=alt.X("Clock:N", title="Time", sort=None,
+                     axis=alt.Axis(labelAngle=-45,
+                                   labelExpr=f"parseInt(split(datum.label,':')[2]) % {label_each} === 0 ? datum.label : ''")),
             y=alt.Y("Noise:Q", scale=alt.Scale(domain=[0, 15], domainMin=0), title="Noise level"),
         ).properties(height=320)
         st.altair_chart(chart, use_container_width=True)
