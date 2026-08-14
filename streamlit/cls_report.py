@@ -139,9 +139,8 @@ else:
         window = total_range
 
     with col_b:
-        pos = st.slider("Position", min_value=0, max_value=max(total_range, 1),
-                        value=0, step=1,
-                        format_func=lambda s: f"{(min_sec+s)//3600:02d}:{((min_sec+s)%3600)//60:02d}:{(min_sec+s)%60:02d}")
+        pos = st.slider("Position (seconds from start)", min_value=0, max_value=max(total_range, 1),
+                        value=0, step=1)
 
     start = min_sec + pos
     end = start + window
