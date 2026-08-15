@@ -76,7 +76,14 @@ def serial_reader(port):
     while True:
         try:
             ser = serial.Serial(port, 9600, timeout=1)
+            ser.dtr = False
+            time.sleep(3)  # wait for Arduino boot + time window
+            # Send time to Arduino
+            time_str = datetime.now().strftime("%H:%M:%S")
+            ser.write(f"{time_str}\n".encode())
+            print(f"Sent time: {time_str}")
             time.sleep(0.5)
+            ser.reset_input_buffer()
             print(f"Connected to {port}. Monitoring noise...")
             while True:
                 line = ser.readline().decode(errors='ignore').strip()

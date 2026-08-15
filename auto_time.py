@@ -34,6 +34,7 @@ def main():
     while True:
         try:
             ser = serial.Serial(port, 9600, timeout=0.1)
+            ser.dtr = False
             time.sleep(0.5)
             now = datetime.now()
             time_str = now.strftime("%H:%M:%S")
@@ -43,7 +44,10 @@ def main():
             response = ser.readline().decode(errors="ignore").strip()
             if response:
                 print(f"Arduino: {response}")
+            ser.dtr = False
             ser.close()
+            del ser
+            time.sleep(0.5)
             return
         except serial.SerialException:
             time.sleep(0.5)
