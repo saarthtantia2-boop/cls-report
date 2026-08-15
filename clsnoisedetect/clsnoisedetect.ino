@@ -206,7 +206,7 @@ void loop() {
   if (nowMs - lastAmpMs >= AMP_WIN_MS) {
     if (!recActive) {
       int a = ampMax - ampMin;
-      noise = constrain(map(a, 0, 1300, 0, 15), 0, 15);
+      noise = constrain(map(a, 0, 950, 0, 15), 0, 15);
       ampMin = 1023;
       ampMax = 0;
     }
