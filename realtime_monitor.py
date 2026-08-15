@@ -111,12 +111,13 @@ def animate(frame):
         ax.set_facecolor('#1a1a2e')
         return
 
-    times_display = [(t - times[0]).total_seconds() for t in times]
+    # 0 = now (rightmost), older bars go left as negative
+    times_display = [(t - times[-1]).total_seconds() for t in times]
     colors = [get_color(v) for v in values]
 
     bars = ax.bar(times_display, values, width=0.8, color=colors, edgecolor='none', alpha=0.9)
 
-    ax.set_xlim(max(0, times_display[-1] - 60), max(60, times_display[-1]))
+    ax.set_xlim(-60, 1)
     ax.set_ylim(0, NOISE_MAX + 1)
     ax.set_xlabel("Seconds ago", color='#aaaaaa', fontsize=10)
     ax.set_ylabel("Noise Level", color='#aaaaaa', fontsize=10)
