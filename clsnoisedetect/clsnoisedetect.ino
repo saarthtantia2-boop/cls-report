@@ -214,6 +214,10 @@ void loop() {
 
     // Log noise to SD every second (new file every 10 min)
     writeLogLine();
+
+    // Send noise to laptop for real-time monitoring
+    Serial.print("N:");
+    Serial.println(noise);
   }
 
   // --- Button ---
